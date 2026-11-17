@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LTCell — Ecosistema de Gestión para Talleres y Revendedores</title>
+  <meta name="description" content="Plataformas profesionales para gestión de reparaciones de celulares (LTCell Manager) y compra/venta de equipos (LTCell Reseller)." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-main: #09090b;
+      --bg-card: #121216;
+      --bg-card-hover: #18181f;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --brand: #7C3AED;
+      --brand-hover: #6D28D9;
+      --brand-glow: rgba(124, 58, 237, 0.28);
+      --text-primary: #ffffff;
+      --text-secondary: #a1a1aa;
+      --success: #10b981;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-image: radial-gradient(circle at 50% 0%, rgba(124, 58, 237, 0.16), transparent 55%);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* Navbar */
+    header {
+      border-bottom: 1px solid var(--border-subtle);
+      backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(9, 9, 11, 0.8);
+    }
+
+    .nav {
+      height: 72px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-primary);
+      font-weight: 800;
+      font-size: 1.25rem;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-badge {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: var(--brand);
+      color: #ffffff;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 1rem;
+      box-shadow: 0 0 20px var(--brand-glow);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .btn-ghost {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 8px;
+      transition: 0.2s;
+    }
+
+    .btn-ghost:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    /* Hero */
+    .hero {
+      padding: 72px 0 48px;
+      text-align: center;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(124, 58, 237, 0.14);
+      border: 1px solid rgba(124, 58, 237, 0.4);
+      color: #c4b5fd;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: clamp(2.1rem, 4.5vw, 3.3rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      max-width: 780px;
+      margin: 0 auto 18px;
+    }
+
+    .hero p {
+      color: var(--text-secondary);
+      font-size: 1.08rem;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    /* Plataformas Grid */
+    .platforms {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 24px;
+      margin: 24px 0 64px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      padding: 32px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      background: var(--bg-card-hover);
+    }
+
+    .card-featured {
+      border: 1.5px solid var(--brand);
+      box-shadow: 0 12px 40px -12px var(--brand-glow);
+      position: relative;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .tag-primary {
+      background: var(--brand);
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .tag-live {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+    }
+
+    .card h2 {
+      font-size: 1.55rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 10px;
+    }
+
+    .card-desc {
+      color: var(--text-secondary);
+      font-size: 0.96rem;
+      margin-bottom: 22px;
+    }
+
+    .feature-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 28px;
+      font-size: 0.92rem;
+      color: #d4d4d8;
+    }
+
+    .feature-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .check {
+      color: #a78bfa;
+      font-weight: 800;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 13px 20px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: 0.2s;
+    }
+
+    .btn-primary {
+      background: var(--brand);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-hover);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    /* Footer */
+    footer {
+      margin-top: auto;
+      border-top: 1px solid var(--border-subtle);
+      padding: 28px 0;
+      color: var(--text-secondary);
+      font-size: 0.88rem;
+    }
+
+    .footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a href="#" class="logo">
+        <span class="logo-badge">LT</span>
+        <span>LTCell</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#plataformas" class="btn-ghost">Plataformas</a>
+        <a href="https://lt-cell-reseller-v1.vercel.app" target="_blank" rel="noopener" class="btn-ghost">Abrir Reseller</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <span class="pill">Suite de Gestión para Telefonía Móvil</span>
+      <h1>Todo el control de tu taller y tus ventas en un solo ecosistema</h1>
+      <p>
+        Herramientas rápidas, instalables en PC o celular y sincronizadas en la nube. Elegí la plataforma según la operación de tu negocio.
+      </p>
+    </section>
+
+    <section id="plataformas" class="platforms">
+      <!-- Plataforma Principal: LTCell Manager -->
+      <article class="card card-featured">
+        <div>
+          <div class="card-header">
+            <span class="tag-primary">Plataforma Principal</span>
+            <span style="color: var(--text-secondary); font-size: 0.82rem; font-weight: 600;">Servicio Técnico</span>
+          </div>
+          <h2>LTCell Manager</h2>
+          <p class="card-desc">
+            Sistema integral pensado para talleres de reparación de celulares y servicio técnico especializado.
+          </p>
+          <ul class="feature-list">
+            <li><span class="check">✓</span> Órdenes de reparación con estado y diagnóstico</li>
+            <li><span class="check">✓</span> Historial de clientes, equipos e IMEI</li>
+            <li><span class="check">✓</span> Control de repuestos, presupuestos y caja</li>
+            <li><span class="check">✓</span> App instalable (PWA) con respaldo en la nube</li>
+          </ul>
+        </div>
+        <!-- Cuando despleguemos LTCell Manager, reemplazamos #manager-en-construccion por su URL .vercel.app -->
+        <a href="#manager-en-construccion" onclick="alert('LTCell Manager está en etapa final de lanzamiento. Muy pronto vas a poder ingresar directo desde acá.'); return false;" class="btn btn-primary">
+          Ingresar a LTCell Manager →
+        </a>
+      </article>
+
+      <!-- Plataforma Secundaria: LTCell Reseller -->
+      <article class="card">
+        <div>
+          <div class="card-header">
+            <span class="tag-live"><span class="dot"></span> Disponible ahora</span>
+            <span style="color: var(--text-secondary); font-size: 0.82rem; font-weight: 600;">Compra / Venta</span>
+          </div>
+          <h2>LTCell Reseller</h2>
+          <p class="card-desc">
+            Gestión comercial ágil para revendedores y locales dedicados a la compra y venta de celulares y accesorios.
+          </p>
+          <ul class="feature-list">
+            <li><span class="check">✓</span> Inventario centralizado por SKU e IMEI</li>
+            <li><span class="check">✓</span> Cálculo automático de costos y márgenes</li>
+            <li><span class="check">✓</span> Registro rápido de compras y ventas</li>
+            <li><span class="check">✓</span> Modo demo sin cuenta + nube sincronizada</li>
+          </ul>
+        </div>
+        <a href="https://lt-cell-reseller-v1.vercel.app" target="_blank" rel="noopener" class="btn btn-secondary">
+          Abrir LTCell Reseller ↗
+        </a>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container footer-inner">
+      <span>© 2026 LTCell — Software de gestión para el rubro celular.</span>
+      <span>Preparado para PC, Android y iOS (PWA)</span>
+    </div>
+  </footer>
+</body>
+</html>
