@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Seguimiento de Reparación</title>
+  <style>
+    :root {
+      --bg: #0f0f14;
+      --surface: #181822;
+      --surface-2: #222230;
+      --border: rgba(255, 255, 255, 0.08);
+      --primary: #7c3aed;
+      --primary-light: #a78bfa;
+      --text: #ffffff;
+      --muted: #9ca3af;
+      --green: #22c55e;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --blue: #3b82f6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 20px 14px 40px;
+      line-height: 1.45;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 460px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      padding: 0 4px;
+    }
+
+    .brand {
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .order-pill {
+      background: rgba(124, 58, 237, 0.18);
+      color: var(--primary-light);
+      border: 1px solid rgba(124, 58, 237, 0.4);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 14px;
+    }
+
+    .greeting {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 4px;
+    }
+
+    .device {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      margin-bottom: 18px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    /* Barra de progreso */
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .step-bar {
+      height: 6px;
+      border-radius: 999px;
+      background: var(--surface-2);
+      transition: background 0.3s;
+    }
+
+    .step-bar.active { background: var(--primary); }
+    .step-bar.done { background: var(--green); }
+    .step-bar.warn { background: var(--amber); }
+    .step-bar.cancel { background: var(--red); }
+
+    .step-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .section-title {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .issue-box {
+      background: var(--surface-2);
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 0.93rem;
+      color: #e5e7eb;
+    }
+
+    .row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.94rem;
+    }
+
+    .row:last-child { border-bottom: none; padding-bottom: 0; }
+    .row-label { color: var(--muted); }
+    .row-val { font-weight: 600; }
+
+    .balance-row {
+      margin-top: 6px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .balance-val {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--primary-light);
+    }
+
+    .footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.78rem;
+      margin-top: 16px;
+    }
+
+    .error-card {
+      text-align: center;
+      padding: 36px 20px;
+    }
+
+    .error-card h2 { font-size: 1.15rem; margin-bottom: 8px; }
+    .error-card p { color: var(--muted); font-size: 0.9rem; }
+
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div id="content" class="hidden">
+      <div class="header">
+        <div class="brand" id="workshopName">Taller</div>
+        <div class="order-pill" id="orderNumber">ORD-0000</div>
+      </div>
+
+      <section class="card">
+        <div class="greeting" id="clientGreeting">Hola,</div>
+        <div class="device" id="deviceName">Equipo</div>
+        <div class="status-badge" id="statusBadge">
+          <span class="dot"></span>
+          <span id="statusText">Estado</span>
+        </div>
+
+        <div class="steps" id="progressBars">
+          <div class="step-bar"></div>
+          <div class="step-bar"></div>
+          <div class="step-bar"></div>
+          <div class="step-bar"></div>
+        </div>
+        <div class="step-labels">
+          <span>Recibido</span>
+          <span>Revisión</span>
+          <span>Reparación</span>
+          <span>Listo</span>
+        </div>
+      </section>
+
+      <section class="card" id="issueCard">
+        <div class="section-title">Falla reportada</div>
+        <div class="issue-box" id="reportedIssue"></div>
+      </section>
+
+      <section class="card">
+        <div class="section-title">Resumen económico y garantía</div>
+        <div class="row">
+          <span class="row-label">Presupuesto total</span>
+          <span class="row-val" id="totalPrice">$ 0</span>
+        </div>
+        <div class="row">
+          <span class="row-label">Seña / abonado</span>
+          <span class="row-val" id="deposit">$ 0</span>
+        </div>
+        <div class="row">
+          <span class="row-label">Garantía</span>
+          <span class="row-val" id="warrantyDays">30 días</span>
+        </div>
+        <div class="balance-row">
+          <span class="row-label" style="font-weight: 600; color: #fff;">Saldo restante</span>
+          <span class="balance-val" id="balance">$ 0</span>
+        </div>
+      </section>
+
+      <div class="footer" id="updatedAt"></div>
+    </div>
+
+    <div id="errorView" class="card error-card hidden">
+      <h2>Enlace de seguimiento no válido</h2>
+      <p>Pedile al taller que te reenvíe el link actualizado de tu orden de reparación.</p>
+    </div>
+  </main>
+
+  <script>
+    const STATUS_MAP = {
+      RECIBIDO:           { label: "Equipo recibido",     step: 1, color: "#60a5fa", bg: "rgba(59,130,246,0.16)",  barClass: "active" },
+      EN_DIAGNOSTICO:     { label: "En diagnóstico",      step: 2, color: "#a78bfa", bg: "rgba(124,58,237,0.18)", barClass: "active" },
+      PRESUPUESTADO:      { label: "Presupuestado",       step: 2, color: "#fbbf24", bg: "rgba(245,158,11,0.16)", barClass: "warn"   },
+      ESPERANDO_REPUESTO: { label: "Esperando repuesto",  step: 3, color: "#fbbf24", bg: "rgba(245,158,11,0.16)", barClass: "warn"   },
+      EN_REPARACION:      { label: "En reparación",       step: 3, color: "#a78bfa", bg: "rgba(124,58,237,0.18)", barClass: "active" },
+      LISTO:              { label: "¡Listo para retirar!",step: 4, color: "#4ade80", bg: "rgba(34,197,94,0.16)",  barClass: "done"   },
+      ENTREGADO:          { label: "Entregado",           step: 4, color: "#4ade80", bg: "rgba(34,197,94,0.16)",  barClass: "done"   },
+      CANCELADO:          { label: "Orden cancelada",     step: 4, color: "#f87171", bg: "rgba(239,68,68,0.16)",  barClass: "cancel" }
+    };
+
+    function decodeBase64Url(str) {
+      let base64 = str.replace(/-/g, "+").replace(/_/g, "/");
+      while (base64.length % 4) base64 += "=";
+      const binary = atob(base64);
+      const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+      return new TextDecoder("utf-8").decode(bytes);
+    }
+
+    function formatMoney(amount, currency) {
+      const val = Number(amount) || 0;
+      const code = (currency || "ARS").toUpperCase();
+      const locale = code === "USD" ? "en-US" : "es-AR";
+      const formatted = new Intl.NumberFormat(locale, {
+        minimumFractionDigits: code === "USD" ? 2 : 0,
+        maximumFractionDigits: code === "USD" ? 2 : 0
+      }).format(val);
+      return (code === "USD" ? "US$ " : "$ ") + formatted;
+    }
+
+    function render() {
+      const rawHash = window.location.hash ? window.location.hash.slice(1).trim() : "";
+      if (!rawHash) {
+        document.getElementById("errorView").classList.remove("hidden");
+        return;
+      }
+
+      try {
+        const data = JSON.parse(decodeBase64Url(rawHash));
+        const workshop = data.w || "Taller";
+        const orderNum = data.n || "Sin número";
+        const client = data.c || "Cliente";
+        const device = data.d || "Equipo";
+        const statusInfo = STATUS_MAP[data.s] || {
+          label: data.s || "En proceso",
+          step: 1,
+          color: "#a78bfa",
+          bg: "rgba(124,58,237,0.18)",
+          barClass: "active"
+        };
+
+        document.title = `${orderNum} · ${workshop}`;
+        document.getElementById("workshopName").textContent = workshop;
+        document.getElementById("orderNumber").textContent = orderNum;
+        document.getElementById("clientGreeting").textContent = `Hola ${client}, este es el estado de tu equipo:`;
+        document.getElementById("deviceName").textContent = device;
+
+        const badge = document.getElementById("statusBadge");
+        badge.style.color = statusInfo.color;
+        badge.style.background = statusInfo.bg;
+        document.getElementById("statusText").textContent = statusInfo.label;
+
+        const bars = document.querySelectorAll("#progressBars .step-bar");
+        bars.forEach((bar, idx) => {
+          if (idx < statusInfo.step) bar.classList.add(statusInfo.barClass);
+        });
+
+        const issue = (data.i || "").trim();
+        if (issue) {
+          document.getElementById("reportedIssue").textContent = issue;
+        } else {
+          document.getElementById("issueCard").classList.add("hidden");
+        }
+
+        const total = Number(data.t) || 0;
+        const deposit = Number(data.p) || 0;
+        const balance = Math.max(0, total - deposit);
+        const currency = data.m || "ARS";
+
+        document.getElementById("totalPrice").textContent = formatMoney(total, currency);
+        document.getElementById("deposit").textContent = formatMoney(deposit, currency);
+        document.getElementById("balance").textContent = formatMoney(balance, currency);
+        document.getElementById("warrantyDays").textContent =
+          (Number(data.g) || 0) > 0 ? `${data.g} días` : "Sin garantía";
+
+        if (data.u) {
+          const date = new Date(Number(data.u));
+          if (!isNaN(date.getTime())) {
+            document.getElementById("updatedAt").textContent =
+              "Última actualización: " + date.toLocaleString("es-AR", {
+                day: "2-digit", month: "2-digit", year: "numeric",
+                hour: "2-digit", minute: "2-digit"
+              });
+          }
+        }
+
+        document.getElementById("content").classList.remove("hidden");
+      } catch (e) {
+        document.getElementById("errorView").classList.remove("hidden");
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>
