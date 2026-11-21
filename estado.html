@@ -17,7 +17,6 @@
       --green: #22c55e;
       --amber: #f59e0b;
       --red: #ef4444;
-      --blue: #3b82f6;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -33,10 +32,7 @@
       line-height: 1.45;
     }
 
-    .container {
-      width: 100%;
-      max-width: 460px;
-    }
+    .container { width: 100%; max-width: 460px; }
 
     .header {
       display: flex;
@@ -46,11 +42,7 @@
       padding: 0 4px;
     }
 
-    .brand {
-      font-size: 1.15rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
-    }
+    .brand { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
 
     .order-pill {
       background: rgba(124, 58, 237, 0.18);
@@ -70,17 +62,8 @@
       margin-bottom: 14px;
     }
 
-    .greeting {
-      color: var(--muted);
-      font-size: 0.9rem;
-      margin-bottom: 4px;
-    }
-
-    .device {
-      font-size: 1.35rem;
-      font-weight: 700;
-      margin-bottom: 14px;
-    }
+    .greeting { color: var(--muted); font-size: 0.9rem; margin-bottom: 4px; }
+    .device { font-size: 1.35rem; font-weight: 700; margin-bottom: 14px; }
 
     .status-badge {
       display: inline-flex;
@@ -93,14 +76,8 @@
       margin-bottom: 18px;
     }
 
-    .dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: currentColor;
-    }
+    .dot { width: 9px; height: 9px; border-radius: 50%; background: currentColor; }
 
-    /* Barra de progreso */
     .steps {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -108,24 +85,13 @@
       margin-bottom: 10px;
     }
 
-    .step-bar {
-      height: 6px;
-      border-radius: 999px;
-      background: var(--surface-2);
-      transition: background 0.3s;
-    }
-
+    .step-bar { height: 6px; border-radius: 999px; background: var(--surface-2); transition: background 0.3s; }
     .step-bar.active { background: var(--primary); }
     .step-bar.done { background: var(--green); }
     .step-bar.warn { background: var(--amber); }
     .step-bar.cancel { background: var(--red); }
 
-    .step-labels {
-      display: flex;
-      justify-content: space-between;
-      font-size: 0.72rem;
-      color: var(--muted);
-    }
+    .step-labels { display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--muted); }
 
     .section-title {
       font-size: 0.78rem;
@@ -166,32 +132,37 @@
       align-items: center;
     }
 
-    .balance-val {
-      font-size: 1.2rem;
-      font-weight: 800;
-      color: var(--primary-light);
+    .balance-val { font-size: 1.2rem; font-weight: 800; color: var(--primary-light); }
+
+    .refresh-btn {
+      width: 100%;
+      background: var(--surface-2);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 4px;
     }
 
-    .footer {
-      text-align: center;
-      color: var(--muted);
-      font-size: 0.78rem;
-      margin-top: 16px;
-    }
+    .refresh-btn:active { opacity: 0.8; }
 
-    .error-card {
-      text-align: center;
-      padding: 36px 20px;
-    }
-
-    .error-card h2 { font-size: 1.15rem; margin-bottom: 8px; }
-    .error-card p { color: var(--muted); font-size: 0.9rem; }
-
+    .footer { text-align: center; color: var(--muted); font-size: 0.78rem; margin-top: 14px; }
+    .state-card { text-align: center; padding: 36px 20px; }
+    .state-card h2 { font-size: 1.15rem; margin-bottom: 8px; }
+    .state-card p { color: var(--muted); font-size: 0.9rem; }
     .hidden { display: none; }
   </style>
 </head>
 <body>
   <main class="container">
+    <div id="loadingView" class="card state-card">
+      <h2>Consultando orden...</h2>
+      <p>Obteniendo el estado más reciente desde el taller.</p>
+    </div>
+
     <div id="content" class="hidden">
       <div class="header">
         <div class="brand" id="workshopName">Taller</div>
@@ -245,34 +216,31 @@
         </div>
       </section>
 
+      <button class="refresh-btn" id="refreshBtn" onclick="loadOrder()">Actualizar estado</button>
       <div class="footer" id="updatedAt"></div>
     </div>
 
-    <div id="errorView" class="card error-card hidden">
-      <h2>Enlace de seguimiento no válido</h2>
-      <p>Pedile al taller que te reenvíe el link actualizado de tu orden de reparación.</p>
+    <div id="errorView" class="card state-card hidden">
+      <h2 id="errorTitle">Orden no encontrada</h2>
+      <p id="errorMsg">Verificá el enlace o pedile al taller que sincronice el estado de tu equipo.</p>
     </div>
   </main>
 
   <script>
-    const STATUS_MAP = {
-      RECIBIDO:           { label: "Equipo recibido",     step: 1, color: "#60a5fa", bg: "rgba(59,130,246,0.16)",  barClass: "active" },
-      EN_DIAGNOSTICO:     { label: "En diagnóstico",      step: 2, color: "#a78bfa", bg: "rgba(124,58,237,0.18)", barClass: "active" },
-      PRESUPUESTADO:      { label: "Presupuestado",       step: 2, color: "#fbbf24", bg: "rgba(245,158,11,0.16)", barClass: "warn"   },
-      ESPERANDO_REPUESTO: { label: "Esperando repuesto",  step: 3, color: "#fbbf24", bg: "rgba(245,158,11,0.16)", barClass: "warn"   },
-      EN_REPARACION:      { label: "En reparación",       step: 3, color: "#a78bfa", bg: "rgba(124,58,237,0.18)", barClass: "active" },
-      LISTO:              { label: "¡Listo para retirar!",step: 4, color: "#4ade80", bg: "rgba(34,197,94,0.16)",  barClass: "done"   },
-      ENTREGADO:          { label: "Entregado",           step: 4, color: "#4ade80", bg: "rgba(34,197,94,0.16)",  barClass: "done"   },
-      CANCELADO:          { label: "Orden cancelada",     step: 4, color: "#f87171", bg: "rgba(239,68,68,0.16)",  barClass: "cancel" }
-    };
+    // PEGÁ ACÁ TUS DATOS DE SUPABASE (Project Settings -> API)
+    const SUPABASE_URL = https://mgkrmnwtoddqejkwkoiq.supabase.co;
+    const SUPABASE_ANON_KEY = sb_publishable_sKgCG4OEU1dilMkpjpXMTQ_dZgdXmx2;
 
-    function decodeBase64Url(str) {
-      let base64 = str.replace(/-/g, "+").replace(/_/g, "/");
-      while (base64.length % 4) base64 += "=";
-      const binary = atob(base64);
-      const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
-      return new TextDecoder("utf-8").decode(bytes);
-    }
+    const STATUS_MAP = {
+      RECIBIDO:           { label: "Equipo recibido",      step: 1, color: "#60a5fa", bg: "rgba(59,130,246,0.16)",  barClass: "active" },
+      EN_DIAGNOSTICO:     { label: "En diagnóstico",       step: 2, color: "#a78bfa", bg: "rgba(124,58,237,0.18)", barClass: "active" },
+      PRESUPUESTADO:      { label: "Presupuestado",        step: 2, color: "#fbbf24", bg: "rgba(245,158,11,0.16)", barClass: "warn"   },
+      ESPERANDO_REPUESTO: { label: "Esperando repuesto",   step: 3, color: "#fbbf24", bg: "rgba(245,158,11,0.16)", barClass: "warn"   },
+      EN_REPARACION:      { label: "En reparación",        step: 3, color: "#a78bfa", bg: "rgba(124,58,237,0.18)", barClass: "active" },
+      LISTO:              { label: "¡Listo para retirar!", step: 4, color: "#4ade80", bg: "rgba(34,197,94,0.16)",  barClass: "done"   },
+      ENTREGADO:          { label: "Entregado",            step: 4, color: "#4ade80", bg: "rgba(34,197,94,0.16)",  barClass: "done"   },
+      CANCELADO:          { label: "Orden cancelada",      step: 4, color: "#f87171", bg: "rgba(239,68,68,0.16)",  barClass: "cancel" }
+    };
 
     function formatMoney(amount, currency) {
       const val = Number(amount) || 0;
@@ -285,21 +253,51 @@
       return (code === "USD" ? "US$ " : "$ ") + formatted;
     }
 
-    function render() {
-      const rawHash = window.location.hash ? window.location.hash.slice(1).trim() : "";
-      if (!rawHash) {
-        document.getElementById("errorView").classList.remove("hidden");
+    function showError(title, msg) {
+      document.getElementById("loadingView").classList.add("hidden");
+      document.getElementById("content").classList.add("hidden");
+      document.getElementById("errorTitle").textContent = title;
+      document.getElementById("errorMsg").textContent = msg;
+      document.getElementById("errorView").classList.remove("hidden");
+    }
+
+    async function loadOrder() {
+      const params = new URLSearchParams(window.location.search);
+      const token = (params.get("t") || params.get("track") || "").trim();
+
+      if (!token) {
+        showError("Enlace incompleto", "Falta el código de seguimiento en el link.");
         return;
       }
 
+      const btn = document.getElementById("refreshBtn");
+      if (btn) btn.textContent = "Actualizando...";
+
       try {
-        const data = JSON.parse(decodeBase64Url(rawHash));
-        const workshop = data.w || "Taller";
-        const orderNum = data.n || "Sin número";
-        const client = data.c || "Cliente";
-        const device = data.d || "Equipo";
-        const statusInfo = STATUS_MAP[data.s] || {
-          label: data.s || "En proceso",
+        const url = `${SUPABASE_URL.replace(/\/$/, "")}/rest/v1/public_order_tracking?tracking_token=eq.${encodeURIComponent(token)}&select=*`;
+        const res = await fetch(url, {
+          headers: {
+            "apikey": SUPABASE_ANON_KEY,
+            "Authorization": `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          cache: "no-store"
+        });
+
+        if (!res.ok) throw new Error("HTTP " + res.status);
+        const rows = await res.json();
+
+        if (!rows || rows.length === 0) {
+          showError("Orden no encontrada", "Todavía no se publicó esta orden o el código es incorrecto.");
+          return;
+        }
+
+        const data = rows[0];
+        const workshop = data.workshop_name || "Taller";
+        const orderNum = data.order_number || "Sin número";
+        const client = data.client_first_name || "Cliente";
+        const device = data.device_label || "Equipo";
+        const statusInfo = STATUS_MAP[data.status] || {
+          label: data.status || "En proceso",
           step: 1,
           color: "#a78bfa",
           bg: "rgba(124,58,237,0.18)",
@@ -309,7 +307,7 @@
         document.title = `${orderNum} · ${workshop}`;
         document.getElementById("workshopName").textContent = workshop;
         document.getElementById("orderNumber").textContent = orderNum;
-        document.getElementById("clientGreeting").textContent = `Hola ${client}, este es el estado de tu equipo:`;
+        document.getElementById("clientGreeting").textContent = `Hola ${client}, este es el estado actual de tu equipo:`;
         document.getElementById("deviceName").textContent = device;
 
         const badge = document.getElementById("statusBadge");
@@ -319,29 +317,32 @@
 
         const bars = document.querySelectorAll("#progressBars .step-bar");
         bars.forEach((bar, idx) => {
+          bar.className = "step-bar";
           if (idx < statusInfo.step) bar.classList.add(statusInfo.barClass);
         });
 
-        const issue = (data.i || "").trim();
+        const issue = (data.reported_issue || "").trim();
+        const issueCard = document.getElementById("issueCard");
         if (issue) {
           document.getElementById("reportedIssue").textContent = issue;
+          issueCard.classList.remove("hidden");
         } else {
-          document.getElementById("issueCard").classList.add("hidden");
+          issueCard.classList.add("hidden");
         }
 
-        const total = Number(data.t) || 0;
-        const deposit = Number(data.p) || 0;
+        const total = Number(data.total_price) || 0;
+        const deposit = Number(data.deposit) || 0;
         const balance = Math.max(0, total - deposit);
-        const currency = data.m || "ARS";
+        const currency = data.currency_code || "ARS";
 
         document.getElementById("totalPrice").textContent = formatMoney(total, currency);
         document.getElementById("deposit").textContent = formatMoney(deposit, currency);
         document.getElementById("balance").textContent = formatMoney(balance, currency);
         document.getElementById("warrantyDays").textContent =
-          (Number(data.g) || 0) > 0 ? `${data.g} días` : "Sin garantía";
+          (Number(data.warranty_days) || 0) > 0 ? `${data.warranty_days} días` : "Sin garantía";
 
-        if (data.u) {
-          const date = new Date(Number(data.u));
+        if (data.updated_at) {
+          const date = new Date(Number(data.updated_at));
           if (!isNaN(date.getTime())) {
             document.getElementById("updatedAt").textContent =
               "Última actualización: " + date.toLocaleString("es-AR", {
@@ -351,13 +352,17 @@
           }
         }
 
+        document.getElementById("loadingView").classList.add("hidden");
+        document.getElementById("errorView").classList.add("hidden");
         document.getElementById("content").classList.remove("hidden");
-      } catch (e) {
-        document.getElementById("errorView").classList.remove("hidden");
+      } catch (err) {
+        showError("No se pudo conectar", "Intentá nuevamente en unos segundos.");
+      } finally {
+        if (btn) btn.textContent = "Actualizar estado";
       }
     }
 
-    render();
+    loadOrder();
   </script>
 </body>
 </html>
